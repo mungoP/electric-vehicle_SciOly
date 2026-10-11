@@ -1,0 +1,17 @@
+#Build directories
+build/
+cmake-build-*/
+
+.pio/ 
+venv/
+compile_commands.json
+
+.DS_Store
+
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.uf2
+*.map
