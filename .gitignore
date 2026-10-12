@@ -15,3 +15,6 @@ compile_commands.json
 *.hex
 *.uf2
 *.map
+
+# host test binary
+tests/test_profile
