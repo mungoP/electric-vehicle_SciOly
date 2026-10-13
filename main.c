@@ -21,6 +21,7 @@ typedef enum {
     ST_RUN_REV,
     ST_FINISHED,
     ST_FAULT,
+    ST_START_DELAY, // after START is pressed, before the robot moves (kept last so log state numbers don't shift)
 } run_state_t;
 
 static run_state_t state;
@@ -36,6 +37,7 @@ static plan_result_t plan_result;
 static absolute_time_t t_run_start;   // start button press
 static absolute_time_t t_leg_start;   // start of the current leg's profile
 static absolute_time_t t_pause_start;
+static absolute_time_t t_delay_start; // START press time
 static float leg_start_x;             // x the current leg's progress is measured from
 static float leg_dir;                 // +1 forward, -1 reverse
 static float run_time_s;
@@ -205,7 +207,16 @@ static void tick(absolute_time_t now, float dt) {
     case ST_ARMED:
         if (imu_ok) mpu6050_bias_track(gyro_raw);
         if (pressed) {
-            start_run(now);
+            t_delay_start = now;
+            state = ST_START_DELAY;
+            printf("Starting in %.1f s - hands clear\n", START_DELAY_S);
+        }
+        break;
+
+    case ST_START_DELAY:
+        motor_brake();
+        if (seconds_since(t_delay_start, now) >= START_DELAY_S) {
+            start_run(now); // run clock and odometry start here, not at the press
             drive_leg(&fwd_profile, now, dt, gyro_z); // move on this same tick
         }
         break;
@@ -262,6 +273,7 @@ static void update_led(absolute_time_t now) {
     switch (state) {
     case ST_CALIBRATE: on = (ms / 125) % 2; break;
     case ST_ARMED:     on = (plan_result == PLAN_OK) ? (ms / 500) % 2 : true; break;
+    case ST_START_DELAY: on = (ms / 60) % 2; break; // fast blink = about to move
     case ST_FINISHED:  on = (ms % 2000) < 100; break;
     case ST_FAULT:     on = (ms / 50) % 2; break;
     default:           on = true; break;

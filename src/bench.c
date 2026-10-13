@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/stdio_usb.h"
 #include "bench.h"
 #include "config.h"
 #include "motor.h"
@@ -88,6 +89,9 @@ static void duty_sweep(mt6701_t *enc_l, mt6701_t *enc_r) {
 }
 
 void bench_run(mt6701_t *enc_l, mt6701_t *enc_r) {
+    // USB serial output is dropped until a terminal attaches, so wait for it
+    while (!stdio_usb_connected()) sleep_ms(100);
+    sleep_ms(500);
     printf("\n=== BENCH TEST MODE (wheels off the ground!) ===\n");
     for (;;) {
         wait_for_button("1/4 left motor direction");

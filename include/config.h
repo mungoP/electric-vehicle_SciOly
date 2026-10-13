@@ -7,10 +7,15 @@
  * ============================================================
  * All distances are in mm, all times in seconds.
  */
-#define TARGET_DISTANCE_MM          7000.0f // start point -> target point (5000-9000)
-#define TARGET_TIME_S               15.0f   // target run time (10.0-20.0, 0.5 s steps)
-#define BOTTLE_LINE_FROM_TARGET_MM  2000.0f // target point -> bottle line (1000-3000)
-#define BOTTLE_START_MM             2000.0f // start point -> bottle (2000 regionals, 3000 states)
+// SHORT_COURSE_TEST 1 = small-room calibration course (turns off the distance and time range checks).
+// Set back to 0 and restore the competition values below before a real run.
+#define SHORT_COURSE_TEST           1
+
+#define TARGET_DISTANCE_MM          1000.0f // start point -> target point (5000-9000)
+#define TARGET_TIME_S               8.0f    // target run time (10.0-20.0, 0.5 s steps)
+#define BOTTLE_LINE_FROM_TARGET_MM  1000.0f // target point -> bottle line (1000-3000)
+#define BOTTLE_START_MM             500.0f  // start point -> bottle (2000 regionals, 3000 states)
+// competition values were: 7000 / 15.0 / 2000 / 2000 (distance / time / bottle line / bottle start)
 #define BOTTLE_MARGIN_MM            30.0f   // how far past the bottle line to push the bottle
 
 // set to 1 to build the bench test program instead of the run program
@@ -36,7 +41,7 @@
 // direction flags - verify all of these with TEST_MODE before the first run
 #define LEFT_MOTOR_INVERT   0
 #define RIGHT_MOTOR_INVERT  0
-#define ENC_LEFT_INVERT     0
+#define ENC_LEFT_INVERT     1
 #define ENC_RIGHT_INVERT    0
 #define GYRO_Z_INVERT       0       // turning left (CCW from above) must read positive
 
@@ -45,7 +50,7 @@
  *  MOTION PROFILE
  * ============================================================
  */
-#define V_MAX_MMPS              1400.0f // fastest cruise speed the planner may use
+#define V_MAX_MMPS              2100.0f // fastest cruise speed the planner may use
 #define V_MIN_CRUISE_MMPS       80.0f   // slowest cruise speed the planner may use
 #define A_MAX_MMPS2             1000.0f // accel/decel limit (keep below bottle friction decel)
 #define V_CONTACT_MMPS          250.0f  // speed when the bumper meets the bottle
@@ -72,8 +77,8 @@
 #define V_CORR_MAX_MMPS     250.0f  // limit on the position correction
 
 // per-wheel velocity loop: duty = KV*v + KS*sign(v) + PI(error)
-#define KV_DUTY_PER_MMPS    (1.0f / 1500.0f) // from TEST_MODE duty sweep
-#define KS_DUTY             0.06f   // duty needed to overcome static friction
+#define KV_DUTY_PER_MMPS    (1.0f / 2580.0f) // from TEST_MODE duty sweep
+#define KS_DUTY             0.03f  // duty needed to overcome static friction
 #define V_FF_DEADBAND_MMPS  2.0f    // no KS kick below this commanded speed
 #define KP_VEL              0.0008f
 #define KI_VEL              0.004f
@@ -112,6 +117,7 @@
  *  FINISH + SAFETY
  * ============================================================
  */
+#define START_DELAY_S           2.0f    // pause between pressing START and the robot moving
 #define FINISH_TOL_MM           2.0f
 #define V_STOP_MMPS             15.0f
 #define FINISH_TIMEOUT_S        0.75f   // give up converging this long after the profile ends
@@ -123,10 +129,14 @@
 #define LOG_MAX_SAMPLES         2400
 
 // catch typos in the competition settings at compile time
+#if !SHORT_COURSE_TEST
 _Static_assert(TARGET_DISTANCE_MM >= 5000.0f && TARGET_DISTANCE_MM <= 9000.0f,
                "TARGET_DISTANCE_MM must be 5000-9000");
+#endif
+#if !SHORT_COURSE_TEST
 _Static_assert(TARGET_TIME_S >= 10.0f && TARGET_TIME_S <= 20.0f,
                "TARGET_TIME_S must be 10.0-20.0");
+#endif
 _Static_assert(BOTTLE_LINE_FROM_TARGET_MM >= 1000.0f && BOTTLE_LINE_FROM_TARGET_MM <= 3000.0f,
                "BOTTLE_LINE_FROM_TARGET_MM must be 1000-3000");
 _Static_assert(BOTTLE_START_MM > MP_TO_BUMPER_MM && BOTTLE_START_MM < TARGET_DISTANCE_MM,
